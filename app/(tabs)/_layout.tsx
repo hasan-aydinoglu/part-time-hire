@@ -1,43 +1,65 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { MOCK_LISTINGS } from '../lib/mock';
+import { loadListings, saveListings } from '../lib/storage';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  // İlk açılışta mock verileri kaydet
+  useEffect(() => {
+    (async () => {
+      const current = await loadListings();
+      if (!current || current.length === 0) {
+        await saveListings(MOCK_LISTINGS);
+      }
+    })();
+  }, []);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
+        headerTitleAlign: 'center',
+        tabBarStyle: { backgroundColor: '#0b1220', borderTopColor: '#1f2937' },
+        tabBarActiveTintColor: '#60a5fa',
+        tabBarInactiveTintColor: '#9ca3af',
+        headerStyle: { backgroundColor: '#0b1220' },
+        headerTitleStyle: { color: 'white' },
+      }}
+    >
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Keşfet',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="compass-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="post"
+        options={{
+          title: 'İlan Ver',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="listings"
+        options={{
+          title: 'İlanlarım',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="briefcase-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-circle-outline" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
