@@ -5,7 +5,7 @@ import { MOCK_LISTINGS } from '../lib/mock';
 import { loadListings, saveListings } from '../lib/storage';
 
 export default function TabsLayout() {
-  // İlk açılışta mock verileri kaydet
+  
   useEffect(() => {
     (async () => {
       const current = await loadListings();
