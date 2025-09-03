@@ -3,9 +3,9 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { z } from 'zod';
-import { MOCK_OWNER_ID } from '../lib/mock';
-import { loadListings, saveListings } from '../lib/storage';
-import { Listing } from '../lib/types';
+import { MOCK_OWNER_ID } from '../../src/lib/mock';
+import { loadListings, saveListings } from '../../src/lib/storage';
+import type { Listing } from '../../src/lib/types';
 
 const schema = z.object({
   title: z.string().min(3, 'En az 3 karakter'),

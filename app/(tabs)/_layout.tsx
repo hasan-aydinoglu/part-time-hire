@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
-import { MOCK_LISTINGS } from '../lib/mock';
-import { loadListings, saveListings } from '../lib/storage';
+import { MOCK_LISTINGS } from '../../src/lib/mock';
+import { loadListings, saveListings } from '../../src/lib/storage';
 
 export default function TabsLayout() {
   

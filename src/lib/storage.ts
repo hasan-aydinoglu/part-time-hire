@@ -1,14 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Listing } from './types';
+import type { Listing } from './types';
 
-const KEY = 'LISTINGS_V1';
+const LISTINGS_KEY = 'LISTINGS_V1';
 
 export async function loadListings(): Promise<Listing[]> {
-  const raw = await AsyncStorage.getItem(KEY);
+  const raw = await AsyncStorage.getItem(LISTINGS_KEY);
   if (!raw) return [];
   try { return JSON.parse(raw) as Listing[]; } catch { return []; }
 }
 
 export async function saveListings(items: Listing[]): Promise<void> {
-  await AsyncStorage.setItem(KEY, JSON.stringify(items));
+  await AsyncStorage.setItem(LISTINGS_KEY, JSON.stringify(items));
 }
