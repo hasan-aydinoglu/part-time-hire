@@ -18,8 +18,8 @@ import ListingCard from '../components/ListingCard';
 
 export default function Listings() {
   const [mine, setMine] = useState<Listing[]>([]);
-  const [q, setQ] = useState('');           // metin arama (başlık/açıklama/lokasyon)
-  const [openOnly, setOpenOnly] = useState(false); // sadece açık ilanlar
+  const [q, setQ] = useState('');
+  const [openOnly, setOpenOnly] = useState(false);
   const router = useRouter();
 
   const refresh = useCallback(async () => {
@@ -61,7 +61,6 @@ export default function Listings() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Filtreler */}
       <View style={styles.filters}>
         <TextInput
           style={[styles.input, { flex: 1 }]}
@@ -76,7 +75,6 @@ export default function Listings() {
         <Switch value={openOnly} onValueChange={setOpenOnly} />
       </View>
 
-      {/* Liste */}
       <FlatList
         data={filtered}
         keyExtractor={(i) => i.id}

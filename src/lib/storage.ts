@@ -1,14 +1,16 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Listing } from './types';
+// en üstlerde:
+import type { Application } from './types';
 
-const LISTINGS_KEY = 'LISTINGS_V1';
+// LISTINGS_KEY zaten var, buna ek:
+const APPS_KEY = 'APPLICATIONS_V1';
 
-export async function loadListings(): Promise<Listing[]> {
-  const raw = await AsyncStorage.getItem(LISTINGS_KEY);
+// dosyanın herhangi yerine (export'larla beraber):
+export async function loadApplications(): Promise<Application[]> {
+  const raw = await AsyncStorage.getItem(APPS_KEY);
   if (!raw) return [];
-  try { return JSON.parse(raw) as Listing[]; } catch { return []; }
+  try { return JSON.parse(raw) as Application[]; } catch { return []; }
 }
 
-export async function saveListings(items: Listing[]): Promise<void> {
-  await AsyncStorage.setItem(LISTINGS_KEY, JSON.stringify(items));
+export async function saveApplications(items: Application[]): Promise<void> {
+  await AsyncStorage.setItem(APPS_KEY, JSON.stringify(items));
 }
