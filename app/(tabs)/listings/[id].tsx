@@ -11,8 +11,17 @@ import {
   View,
 } from 'react-native';
 
-import { loadApplications, loadListings, saveApplications, saveListings } from '../../../src/lib/storage';
-import type { Application, ApplicationStatus, Listing } from '../../../src/lib/types';
+import {
+  loadApplications,
+  loadListings,
+  saveApplications,
+  saveListings,
+} from '../../../src/lib/storage';
+import type {
+  Application,
+  ApplicationStatus,
+  Listing,
+} from '../../../src/lib/types';
 
 export default function ListingDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -221,7 +230,9 @@ export default function ListingDetail() {
               <Text style={styles.appTitle}>{ap.name}</Text>
               {!!ap.phone && <Text style={styles.appText}>☎ {ap.phone}</Text>}
               {!!ap.note && <Text style={styles.appText}>“{ap.note}”</Text>}
-              <Text style={[styles.appText, { color: '#60a5fa' }]}>Durum: {ap.status}</Text>
+              <Text style={[styles.appText, { color: '#60a5fa' }]}>
+                Durum: {ap.status}
+              </Text>
 
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 <TouchableOpacity
@@ -246,7 +257,9 @@ export default function ListingDetail() {
             </View>
           )}
           ListEmptyComponent={
-            <Text style={{ color: '#9ca3af', marginTop: 8 }}>Henüz başvuru yok.</Text>
+            <Text style={{ color: '#9ca3af', marginTop: 8 }}>
+              Henüz başvuru yok.
+            </Text>
           }
         />
 
@@ -266,9 +279,24 @@ const styles = StyleSheet.create({
   h1: { color: 'white', fontSize: 22, fontWeight: '800', marginBottom: 10 },
   h2: { color: 'white', fontSize: 18, fontWeight: '700' },
   text: { color: '#d1d5db', marginTop: 6 },
-  btnPrimary: { backgroundColor: '#2563eb', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10 },
-  btnSecondary: { backgroundColor: '#374151', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10 },
-  btnDanger: { backgroundColor: '#b91c1c', paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10 },
+  btnPrimary: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  btnSecondary: {
+    backgroundColor: '#374151',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  btnDanger: {
+    backgroundColor: '#b91c1c',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
   btnText: { color: 'white', fontWeight: '700' },
   input: {
     backgroundColor: '#111827',
@@ -293,7 +321,22 @@ const styles = StyleSheet.create({
   appTitle: { color: 'white', fontWeight: '700' },
   appText: { color: '#d1d5db', marginTop: 2 },
   chipText: { color: 'white', fontWeight: '700' },
-  chipAccept: { backgroundColor: '#16a34a', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
-  chipReject: { backgroundColor: '#b91c1c', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
-  chipPending: { backgroundColor: '#374151', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  chipAccept: {
+    backgroundColor: '#16a34a',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  chipReject: {
+    backgroundColor: '#b91c1c',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  chipPending: {
+    backgroundColor: '#374151',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
 });
