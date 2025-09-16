@@ -16,12 +16,12 @@ import ListingCard from '../components/ListingCard';
 
 export default function Explore() {
   const [items, setItems] = useState<Listing[]>([]);
-  const [q, setQ] = useState('');        // metin arama
-  const [minPay, setMinPay] = useState(''); // min saatlik ücret
-  const [openOnly, setOpenOnly] = useState(true); // sadece açık ilanlar
+  const [q, setQ] = useState('');       
+  const [minPay, setMinPay] = useState(''); 
+  const [openOnly, setOpenOnly] = useState(true); 
   const router = useRouter();
 
-  // sayfa odağa geldiğinde ilanları yükle
+ 
   useFocusEffect(
     useCallback(() => {
       (async () => {
@@ -31,7 +31,7 @@ export default function Explore() {
     }, [])
   );
 
-  // filtrelenmiş liste
+  
   const filtered = useMemo(() => {
     return items.filter((l) => {
       if (openOnly && l.status !== 'open') return false;
@@ -52,7 +52,7 @@ export default function Explore() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Filtreler */}
+      
       <View style={styles.filters}>
         <TextInput
           style={[styles.input, { flex: 1 }]}
@@ -76,7 +76,7 @@ export default function Explore() {
         <Switch value={openOnly} onValueChange={setOpenOnly} />
       </View>
 
-      {/* Liste */}
+      
       <FlatList
         data={filtered}
         keyExtractor={(i) => i.id}

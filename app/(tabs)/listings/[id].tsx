@@ -79,7 +79,7 @@ export default function ListingDetail() {
           const all = await loadListings();
           await saveListings(all.filter((l) => l.id !== id));
 
-          // Bu ilana ait başvuruları da sil
+          
           const apps = await loadApplications();
           await saveApplications(apps.filter((a) => a.listingId !== id));
 
@@ -185,7 +185,7 @@ export default function ListingDetail() {
           </TouchableOpacity>
         </View>
 
-        {/* Başvuru Ekle */}
+        
         <Text style={[styles.h2, { marginTop: 18 }]}>Başvuru Ekle</Text>
         <View style={styles.inputRow}>
           <TextInput

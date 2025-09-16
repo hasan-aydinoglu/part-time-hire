@@ -59,19 +59,19 @@ export default function ListingCard({
       style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
     >
       <View style={[styles.card, mine && styles.mine]}>
-        {/* Başlık */}
+        
         <Text style={styles.title} numberOfLines={2}>
           {head}
         </Text>
 
-        {/* Açıklama */}
+        
         {!!item.description && (
           <Text style={styles.desc} numberOfLines={3}>
             {item.description}
           </Text>
         )}
 
-        {/* Satır: Konum & Ücret */}
+       
         <View style={styles.row}>
           <Text style={styles.meta} numberOfLines={1}>
             📍 {location}
@@ -81,7 +81,7 @@ export default function ListingCard({
           </Text>
         </View>
 
-        {/* Satır: Süre & Kişi */}
+        
         {(duration || typeof item.requiredCount === 'number') && (
           <View style={styles.row}>
             {!!duration && (
@@ -97,17 +97,17 @@ export default function ListingCard({
           </View>
         )}
 
-        {/* Vardiya tarih/saat (varsa) */}
+        
         {(item.startAt || item.endAt) && (
           <Text style={styles.meta} numberOfLines={2}>
             🗓️ {fmtDateTime(item.startAt)} {item.endAt ? '→ ' + fmtDateTime(item.endAt) : ''}
           </Text>
         )}
 
-        {/* Durum */}
+        
         <Text style={styles.status}>Durum: {item.status}</Text>
 
-        {/* Aksiyonlar (sadece ilan sahibinde) */}
+        
         {mine && (
           <View style={styles.actions}>
             <TouchableOpacity style={[styles.chip, styles.edit]} onPress={onEdit}>

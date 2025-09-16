@@ -19,21 +19,21 @@ import { loadListings, saveListings } from '../../src/lib/storage';
 import { Listing } from '../../src/lib/types';
 
 const schema = z.object({
-  // Temel
+  
   title: z.string().min(3, 'En az 3 karakter'),
   companyName: z.string().optional(),
   description: z.string().optional(),
 
-  // Konum
+  
   city: z.string().optional(),
   district: z.string().optional(),
   isRemote: z.boolean().default(false),
 
-  // Ücret / İhtiyaç
-  hourlyRate: z.string().optional(),      // input string, kaydederken number'a çevireceğiz
-  requiredCount: z.string().optional(),   // input string
+ 
+  hourlyRate: z.string().optional(),      
+  requiredCount: z.string().optional(),   
 
-  // Süre
+  
   durationDays: z.string().optional(),
   hoursPerDay: z.string().optional(),
 });
@@ -53,7 +53,7 @@ export default function Post() {
     },
   });
 
-  // Vardiya (opsiyonel, istersen kullan)
+ 
   const [multiDay, setMultiDay] = useState(false);
   const [start, setStart] = useState<Date>(new Date());
   const [end, setEnd] = useState<Date>(new Date(Date.now() + 2 * 60 * 60 * 1000));
@@ -92,7 +92,7 @@ export default function Post() {
   const onSubmit = async (data: FormData) => {
     const all = await loadListings();
 
-    // multiDay kapalıysa end tarihi start günüyle hizala
+    
     let finalStart = new Date(start);
     let finalEnd = new Date(end);
     if (!multiDay) {
@@ -180,7 +180,7 @@ export default function Post() {
           )}
         />
 
-        {/* Konum */}
+       
         <Text style={styles.sub}>Konum</Text>
         <View style={styles.row}>
           <Controller control={control} name="city"
@@ -207,7 +207,7 @@ export default function Post() {
           />
         </View>
 
-        {/* Ücret / İhtiyaç */}
+        
         <Text style={styles.sub}>Ücret & İhtiyaç</Text>
         <View style={styles.row}>
           <Controller control={control} name="hourlyRate"
@@ -227,7 +227,7 @@ export default function Post() {
           />
         </View>
 
-        {/* Süre */}
+        
         <Text style={styles.sub}>Süre</Text>
         <View style={styles.row}>
           <Controller control={control} name="durationDays"
@@ -247,7 +247,7 @@ export default function Post() {
           />
         </View>
 
-        {/* Vardiya (opsiyonel – istersen kaldırabilirsin) */}
+       
         <View style={styles.rowSpace}>
           <Text style={{ color: '#d1d5db' }}>Çok gün (multi-day)</Text>
           <Switch value={multiDay} onValueChange={setMultiDay} />
@@ -288,7 +288,7 @@ export default function Post() {
             onChange={(_, d) => { setShowEndTime(Platform.OS === 'ios'); if (d) setEnd(d); }} />
         )}
 
-        {/* Kaydet */}
+        
         <TouchableOpacity onPress={handleSubmit(onSubmit)} style={styles.btn}>
           <Text style={styles.btnText}>{isEdit ? 'Kaydet' : 'İlanı Yayınla'}</Text>
         </TouchableOpacity>
