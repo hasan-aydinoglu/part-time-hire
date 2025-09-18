@@ -1,19 +1,23 @@
 import { Slot } from "expo-router";
-import React, { useState } from "react";
-import { Switch, View } from "react-native";
+import React from "react";
+import { StatusBar, View } from "react-native";
+import { ThemeProvider, useThemeX } from "../src/theme/ThemeContext";
 
-export default function RootLayout() {
-  const [darkMode, setDarkMode] = useState(false);
-
+function Shell() {
+  const { theme } = useThemeX();
+  const isDark = theme === "dark";
   return (
-    <View style={{ flex: 1, backgroundColor: darkMode ? "#111" : "#fff" }}>
-      {/* Tema değiştirici switch */}
-      <Switch
-        value={darkMode}
-        onValueChange={setDarkMode}
-        style={{ position: "absolute", top: 40, right: 20 }}
-      />
+    <View style={{ flex: 1, backgroundColor: isDark ? "#0f1115" : "#ffffff" }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <Slot />
     </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <Shell />
+    </ThemeProvider>
   );
 }
