@@ -22,10 +22,10 @@ export default function TabsLayout() {
         ),
       }}
     >
-      {/* örnek: */}
+      
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="listings" options={{ title: "Listings" }} />
-      {/* varsa diğer tablar */}
+      
     </Tabs>
   );
 }
