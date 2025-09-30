@@ -1,11 +1,7 @@
-export type ApplicationStatus = 'pending' | 'accepted' | 'rejected';
-
-export type Application = {
+export type Listing = {
   id: string;
-  listingId: string;
-  name: string;
-  phone?: string;
-  note?: string;
-  status: ApplicationStatus;
-  createdAt: string; // ISO
+  title: string;
+  location?: string;     // "Kadıköy", "Beşiktaş" gibi
+  hourlyRate?: number;   // saatlik ücret (örn: 250)
+  // ... mevcut alanların kalsın
 };

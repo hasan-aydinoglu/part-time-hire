@@ -1,120 +1,95 @@
-import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { MOCK_OWNER_ID } from '../../src/lib/mock';
-import { loadListings, saveListings } from '../../src/lib/storage';
-import { Listing } from '../../src/lib/types';
-import ListingCard from '../components/ListingCard';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import FilterSheet, { Filters } from "../../src/components/FilterSheet";
+import { loadListings } from "../../src/lib/storage";
+import type { Listing } from "../../src/lib/types";
 
-export default function Listings() {
-  const [mine, setMine] = useState<Listing[]>([]);
-  const [q, setQ] = useState('');
-  const [openOnly, setOpenOnly] = useState(false);
-  const router = useRouter();
+export default function ListingsScreen() {
+  const [all, setAll] = useState<Listing[]>([]);
+  const [filters, setFilters] = useState<Filters>({});
+  const [open, setOpen] = useState(false);
 
-  const refresh = useCallback(async () => {
-    const data = await loadListings();
-    setMine(data.filter((l) => l.ownerId === MOCK_OWNER_ID));
+  useEffect(() => {
+    (async () => {
+      const data = await loadListings();
+      setAll(data || []);
+    })();
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
+  const applyFilters = useCallback((items: Listing[], f: Filters) => {
+    return items.filter((it) => {
+      const okLoc = f.location
+        ? (it.location || "").toLowerCase().includes(f.location.toLowerCase())
+        : true;
 
-  const handleDelete = (id: string) => {
-    Alert.alert('Silinsin mi?', 'Bu ilan kalıcı olarak silinecek.', [
-      { text: 'Vazgeç' },
-      {
-        text: 'Sil',
-        style: 'destructive',
-        onPress: async () => {
-          const all = await loadListings();
-          await saveListings(all.filter((l) => l.id !== id));
-          refresh();
-        },
-      },
-    ]);
-  };
+      const rate = it.hourlyRate ?? 0;
+      const okMin = f.minRate != null ? rate >= (f.minRate || 0) : true;
+      const okMax = f.maxRate != null ? rate <= (f.maxRate || Number.POSITIVE_INFINITY) : true;
 
-  const filtered = useMemo(() => {
-    return mine.filter((l) => {
-      if (openOnly && l.status !== 'open') return false;
-      if (q) {
-        const haystack = `${l.title} ${l.description ?? ''} ${l.location ?? ''}`.toLowerCase();
-        if (!haystack.includes(q.toLowerCase())) return false;
-      }
-      return true;
+      return okLoc && okMin && okMax;
     });
-  }, [mine, q, openOnly]);
+  }, []);
+
+  const filtered = useMemo(() => applyFilters(all, filters), [all, filters, applyFilters]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.filters}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          placeholder="Ara: başlık, açıklama, lokasyon…"
-          placeholderTextColor="#9ca3af"
-          value={q}
-          onChangeText={setQ}
-        />
-      </View>
-      <View style={styles.row}>
-        <Text style={{ color: '#d1d5db' }}>Sadece açık ilanlar</Text>
-        <Switch value={openOnly} onValueChange={setOpenOnly} />
+    <View style={{ flex: 1, padding: 16 }}>
+      {/* Header / Filter butonu */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
+        <TouchableOpacity
+          onPress={() => setOpen(true)}
+          style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
+        >
+          <Text>Filtrele</Text>
+        </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(i) => i.id}
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => (
-          <ListingCard
-            item={item}
-            mine
-            onPress={() => router.push(`/(tabs)/listing/${item.id}`)}
-            onEdit={() => router.push(`/(tabs)/post?editId=${item.id}`)}
-            onDelete={() => handleDelete(item.id)}
-          />
+      {/* Aktif filtre özetini göster (varsa) */}
+      {(filters.location || filters.minRate || filters.maxRate) ? (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {filters.location ? (
+            <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
+              <Text>Konum: {filters.location}</Text>
+            </View>
+          ) : null}
+          {filters.minRate ? (
+            <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
+              <Text>Min: ₺{filters.minRate}</Text>
+            </View>
+          ) : null}
+          {filters.maxRate ? (
+            <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
+              <Text>Max: ₺{filters.maxRate}</Text>
+            </View>
+          ) : null}
+          <TouchableOpacity onPress={() => setFilters({})} style={{ marginLeft: 6, padding: 6 }}>
+            <Text>Temizle</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* Liste */}
+      <ScrollView>
+        {filtered.map((it) => (
+          <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
+            <Text style={{ fontSize: 18, fontWeight: "600" }}>{it.title}</Text>
+            {!!it.location && <Text>{it.location}</Text>}
+            {!!it.hourlyRate && <Text>₺{it.hourlyRate}/saat</Text>}
+          </View>
+        ))}
+        {filtered.length === 0 && (
+          <Text style={{ marginTop: 20, color: "#666" }}>Filtrelere uygun ilan bulunamadı.</Text>
         )}
-        ListEmptyComponent={
-          <Text style={{ color: '#9ca3af', paddingHorizontal: 16 }}>
-            Filtreye uyan ilan bulunamadı.
-          </Text>
-        }
+      </ScrollView>
+
+      {/* Sheet */}
+      <FilterSheet
+        visible={open}
+        initial={filters}
+        onClose={() => setOpen(false)}
+        onApply={(f) => setFilters(f)}
       />
-    </SafeAreaView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b1220' },
-  filters: { flexDirection: 'row', padding: 16, paddingBottom: 8, gap: 8 },
-  input: {
-    backgroundColor: '#111827',
-    color: 'white',
-    borderWidth: 1,
-    borderColor: '#1f2937',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-});
