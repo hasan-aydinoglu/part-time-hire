@@ -34,7 +34,7 @@ export default function ListingsScreen() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      {/* Header / Filter butonu */}
+    
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
         <TouchableOpacity
@@ -45,7 +45,7 @@ export default function ListingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Aktif filtre özetini göster (varsa) */}
+      
       {(filters.location || filters.minRate || filters.maxRate) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {filters.location ? (
@@ -69,7 +69,7 @@ export default function ListingsScreen() {
         </View>
       ) : null}
 
-      {/* Liste */}
+      
       <ScrollView>
         {filtered.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
@@ -83,7 +83,7 @@ export default function ListingsScreen() {
         )}
       </ScrollView>
 
-      {/* Sheet */}
+      
       <FilterSheet
         visible={open}
         initial={filters}

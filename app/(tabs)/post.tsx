@@ -153,7 +153,7 @@ export default function Post() {
       <ScrollView contentContainerStyle={styles.inner}>
         <Text style={styles.h1}>{isEdit ? 'İlanı Düzenle' : 'Yeni İlan'}</Text>
 
-        {/* Temel */}
+       
         <Text style={styles.label}>Başlık *</Text>
         <Controller control={control} name="title" rules={{ required: 'Zorunlu alan' }}
           render={({ field: { onChange, value } }) => (
