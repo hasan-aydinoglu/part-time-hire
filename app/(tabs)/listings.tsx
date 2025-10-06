@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import FilterSheet, { Filters } from "../../src/components/FilterSheet";
-import { loadListings } from "../../src/lib/storage";
+import { loadFavorites, loadListings } from "../../src/lib/storage";
 import type { Listing } from "../../src/lib/types";
 
 export default function ListingsScreen() {
@@ -9,15 +9,26 @@ export default function ListingsScreen() {
   const [filters, setFilters] = useState<Filters>({});
   const [open, setOpen] = useState(false);
 
+  // ✅ Favori ID’leri
+  const [favIds, setFavIds] = useState<string[]>([]);
+  const [onlyFavs, setOnlyFavs] = useState(false);
+
   useEffect(() => {
     (async () => {
       const data = await loadListings();
       setAll(data || []);
+      const f = await loadFavorites();
+      setFavIds(f || []);
     })();
   }, []);
 
+  // (Opsiyonel) sayfa yeniden görünür olduğunda fav’ları güncellemek istersen:
+  // useFocusEffect(useCallback(() => { loadFavorites().then(setFavIds); }, []));
+
   const applyFilters = useCallback((items: Listing[], f: Filters) => {
     return items.filter((it) => {
+      const okFav = !onlyFavs ? true : favIds.includes(it.id);
+
       const okLoc = f.location
         ? (it.location || "").toLowerCase().includes(f.location.toLowerCase())
         : true;
@@ -26,28 +37,40 @@ export default function ListingsScreen() {
       const okMin = f.minRate != null ? rate >= (f.minRate || 0) : true;
       const okMax = f.maxRate != null ? rate <= (f.maxRate || Number.POSITIVE_INFINITY) : true;
 
-      return okLoc && okMin && okMax;
+      return okFav && okLoc && okMin && okMax;
     });
-  }, []);
+  }, [onlyFavs, favIds]);
 
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters, applyFilters]);
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-    
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+      {/* Başlık + Filtre butonu + Yalnızca Favoriler */}
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
-        <TouchableOpacity
-          onPress={() => setOpen(true)}
-          style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
-        >
-          <Text>Filtrele</Text>
-        </TouchableOpacity>
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ marginRight: 6 }}>Yalnızca Favoriler</Text>
+            <Switch value={onlyFavs} onValueChange={setOnlyFavs} />
+          </View>
+          <TouchableOpacity
+            onPress={() => setOpen(true)}
+            style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
+          >
+            <Text>Filtrele</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      
-      {(filters.location || filters.minRate || filters.maxRate) ? (
+      {/* Aktif filtre chip’leri */}
+      {(filters.location || filters.minRate || filters.maxRate || onlyFavs) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {onlyFavs ? (
+            <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
+              <Text>Yalnızca Favoriler</Text>
+            </View>
+          ) : null}
           {filters.location ? (
             <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
               <Text>Konum: {filters.location}</Text>
@@ -63,13 +86,13 @@ export default function ListingsScreen() {
               <Text>Max: ₺{filters.maxRate}</Text>
             </View>
           ) : null}
-          <TouchableOpacity onPress={() => setFilters({})} style={{ marginLeft: 6, padding: 6 }}>
+          <TouchableOpacity onPress={() => { setFilters({}); setOnlyFavs(false); }} style={{ marginLeft: 6, padding: 6 }}>
             <Text>Temizle</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
-      
+      {/* Liste */}
       <ScrollView>
         {filtered.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
@@ -79,11 +102,13 @@ export default function ListingsScreen() {
           </View>
         ))}
         {filtered.length === 0 && (
-          <Text style={{ marginTop: 20, color: "#666" }}>Filtrelere uygun ilan bulunamadı.</Text>
+          <Text style={{ marginTop: 20, color: "#666" }}>
+            {onlyFavs ? "Favorilerinde bu filtrelere uygun ilan yok." : "Filtrelere uygun ilan bulunamadı."}
+          </Text>
         )}
       </ScrollView>
 
-      
+      {/* Sheet */}
       <FilterSheet
         visible={open}
         initial={filters}
