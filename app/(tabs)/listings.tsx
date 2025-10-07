@@ -9,7 +9,7 @@ export default function ListingsScreen() {
   const [filters, setFilters] = useState<Filters>({});
   const [open, setOpen] = useState(false);
 
-  // ✅ Favori ID’leri
+  
   const [favIds, setFavIds] = useState<string[]>([]);
   const [onlyFavs, setOnlyFavs] = useState(false);
 
@@ -22,8 +22,7 @@ export default function ListingsScreen() {
     })();
   }, []);
 
-  // (Opsiyonel) sayfa yeniden görünür olduğunda fav’ları güncellemek istersen:
-  // useFocusEffect(useCallback(() => { loadFavorites().then(setFavIds); }, []));
+  
 
   const applyFilters = useCallback((items: Listing[], f: Filters) => {
     return items.filter((it) => {
@@ -45,7 +44,7 @@ export default function ListingsScreen() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      {/* Başlık + Filtre butonu + Yalnızca Favoriler */}
+      
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
 
@@ -63,7 +62,7 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-      {/* Aktif filtre chip’leri */}
+     
       {(filters.location || filters.minRate || filters.maxRate || onlyFavs) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {onlyFavs ? (
@@ -92,7 +91,7 @@ export default function ListingsScreen() {
         </View>
       ) : null}
 
-      {/* Liste */}
+      
       <ScrollView>
         {filtered.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
@@ -108,7 +107,7 @@ export default function ListingsScreen() {
         )}
       </ScrollView>
 
-      {/* Sheet */}
+     
       <FilterSheet
         visible={open}
         initial={filters}
