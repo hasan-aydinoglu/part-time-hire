@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import FilterSheet, { Filters } from "../../src/components/FilterSheet";
 import { loadFavorites, loadListings } from "../../src/lib/storage";
 import type { Listing } from "../../src/lib/types";
@@ -9,42 +9,58 @@ export default function ListingsScreen() {
   const [filters, setFilters] = useState<Filters>({});
   const [open, setOpen] = useState(false);
 
-  
   const [favIds, setFavIds] = useState<string[]>([]);
   const [onlyFavs, setOnlyFavs] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const data = await loadListings();
-      setAll(data || []);
-      const f = await loadFavorites();
-      setFavIds(f || []);
-    })();
+  // ✅ Pull-to-Refresh state
+  const [refreshing, setRefreshing] = useState(false);
+
+  // ✅ Tek yerden veri çekme
+  const reload = useCallback(async () => {
+    const data = await loadListings();
+    setAll(data || []);
+    const f = await loadFavorites();
+    setFavIds(f || []);
   }, []);
 
-  
+  // ilk açılışta veriyi yükle
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
-  const applyFilters = useCallback((items: Listing[], f: Filters) => {
-    return items.filter((it) => {
-      const okFav = !onlyFavs ? true : favIds.includes(it.id);
+  // ✅ Aşağı çek yenile
+  const onRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [reload]);
 
-      const okLoc = f.location
-        ? (it.location || "").toLowerCase().includes(f.location.toLowerCase())
-        : true;
+  const applyFilters = useCallback(
+    (items: Listing[], f: Filters) => {
+      return items.filter((it) => {
+        const okFav = !onlyFavs ? true : favIds.includes(it.id);
 
-      const rate = it.hourlyRate ?? 0;
-      const okMin = f.minRate != null ? rate >= (f.minRate || 0) : true;
-      const okMax = f.maxRate != null ? rate <= (f.maxRate || Number.POSITIVE_INFINITY) : true;
+        const okLoc = f.location
+          ? (it.location || "").toLowerCase().includes(f.location.toLowerCase())
+          : true;
 
-      return okFav && okLoc && okMin && okMax;
-    });
-  }, [onlyFavs, favIds]);
+        const rate = it.hourlyRate ?? 0;
+        const okMin = f.minRate != null ? rate >= (f.minRate || 0) : true;
+        const okMax = f.maxRate != null ? rate <= (f.maxRate || Number.POSITIVE_INFINITY) : true;
+
+        return okFav && okLoc && okMin && okMax;
+      });
+    },
+    [onlyFavs, favIds]
+  );
 
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters, applyFilters]);
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
 
@@ -62,7 +78,6 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-     
       {(filters.location || filters.minRate || filters.maxRate || onlyFavs) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {onlyFavs ? (
@@ -85,14 +100,21 @@ export default function ListingsScreen() {
               <Text>Max: ₺{filters.maxRate}</Text>
             </View>
           ) : null}
-          <TouchableOpacity onPress={() => { setFilters({}); setOnlyFavs(false); }} style={{ marginLeft: 6, padding: 6 }}>
+          <TouchableOpacity
+            onPress={() => {
+              setFilters({});
+              setOnlyFavs(false);
+            }}
+            style={{ marginLeft: 6, padding: 6 }}
+          >
             <Text>Temizle</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
-      
-      <ScrollView>
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {filtered.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
             <Text style={{ fontSize: 18, fontWeight: "600" }}>{it.title}</Text>
@@ -107,7 +129,6 @@ export default function ListingsScreen() {
         )}
       </ScrollView>
 
-     
       <FilterSheet
         visible={open}
         initial={filters}
