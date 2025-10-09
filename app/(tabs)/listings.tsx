@@ -12,10 +12,10 @@ export default function ListingsScreen() {
   const [favIds, setFavIds] = useState<string[]>([]);
   const [onlyFavs, setOnlyFavs] = useState(false);
 
-  // ✅ Pull-to-Refresh state
+  
   const [refreshing, setRefreshing] = useState(false);
 
-  // ✅ Tek yerden veri çekme
+  
   const reload = useCallback(async () => {
     const data = await loadListings();
     setAll(data || []);
@@ -23,12 +23,12 @@ export default function ListingsScreen() {
     setFavIds(f || []);
   }, []);
 
-  // ilk açılışta veriyi yükle
+  
   useEffect(() => {
     reload();
   }, [reload]);
 
-  // ✅ Aşağı çek yenile
+  
   const onRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
