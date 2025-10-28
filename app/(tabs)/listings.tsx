@@ -4,6 +4,8 @@ import FilterSheet, { Filters } from "../../src/components/FilterSheet";
 import { loadFavorites, loadListings } from "../../src/lib/storage";
 import type { Listing } from "../../src/lib/types";
 
+type SortOrder = "asc" | "desc";
+
 export default function ListingsScreen() {
   const [all, setAll] = useState<Listing[]>([]);
   const [filters, setFilters] = useState<Filters>({});
@@ -12,10 +14,13 @@ export default function ListingsScreen() {
   const [favIds, setFavIds] = useState<string[]>([]);
   const [onlyFavs, setOnlyFavs] = useState(false);
 
-  
+  // Pull-to-Refresh
   const [refreshing, setRefreshing] = useState(false);
 
-  
+  // Ücrete göre sıralama (varsayılan: azalan)
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
+  // Tek yerden veri çekme
   const reload = useCallback(async () => {
     const data = await loadListings();
     setAll(data || []);
@@ -23,12 +28,10 @@ export default function ListingsScreen() {
     setFavIds(f || []);
   }, []);
 
-  
   useEffect(() => {
     reload();
   }, [reload]);
 
-  
   const onRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
@@ -59,8 +62,28 @@ export default function ListingsScreen() {
 
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters, applyFilters]);
 
+  // 🔽 Sıralama (hourlyRate olmayanlar sona)
+  const sorted = useMemo(() => {
+    const val = (x: number | undefined, order: SortOrder) => {
+      if (x == null) return order === "asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+      return x;
+    };
+    const copy = [...filtered];
+    copy.sort((a, b) => {
+      const av = val(a.hourlyRate, sortOrder);
+      const bv = val(b.hourlyRate, sortOrder);
+      return sortOrder === "asc" ? av - bv : bv - av;
+    });
+    return copy;
+  }, [filtered, sortOrder]);
+
+  const toggleSort = useCallback(() => {
+    setSortOrder((s) => (s === "asc" ? "desc" : "asc"));
+  }, []);
+
   return (
     <View style={{ flex: 1, padding: 16 }}>
+      {/* Başlık + Favori Switch + Filtre + Sıralama */}
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
 
@@ -69,6 +92,15 @@ export default function ListingsScreen() {
             <Text style={{ marginRight: 6 }}>Yalnızca Favoriler</Text>
             <Switch value={onlyFavs} onValueChange={setOnlyFavs} />
           </View>
+
+          {/* Ücrete göre sıralama butonu */}
+          <TouchableOpacity
+            onPress={toggleSort}
+            style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
+          >
+            <Text>Ücret {sortOrder === "asc" ? "↑" : "↓"}</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => setOpen(true)}
             style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
@@ -78,7 +110,8 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-      {(filters.location || filters.minRate || filters.maxRate || onlyFavs) ? (
+      {/* Aktif filtre/sıralama chip’leri */}
+      {(filters.location || filters.minRate || filters.maxRate || onlyFavs || sortOrder) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {onlyFavs ? (
             <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
@@ -100,10 +133,14 @@ export default function ListingsScreen() {
               <Text>Max: ₺{filters.maxRate}</Text>
             </View>
           ) : null}
+          <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
+            <Text>Sıralama: Ücret {sortOrder === "asc" ? "↑" : "↓"}</Text>
+          </View>
           <TouchableOpacity
             onPress={() => {
               setFilters({});
               setOnlyFavs(false);
+              setSortOrder("desc");
             }}
             style={{ marginLeft: 6, padding: 6 }}
           >
@@ -112,23 +149,23 @@ export default function ListingsScreen() {
         </View>
       ) : null}
 
-      <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {filtered.map((it) => (
+      {/* Liste */}
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        {sorted.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
             <Text style={{ fontSize: 18, fontWeight: "600" }}>{it.title}</Text>
             {!!it.location && <Text>{it.location}</Text>}
             {!!it.hourlyRate && <Text>₺{it.hourlyRate}/saat</Text>}
           </View>
         ))}
-        {filtered.length === 0 && (
+        {sorted.length === 0 && (
           <Text style={{ marginTop: 20, color: "#666" }}>
             {onlyFavs ? "Favorilerinde bu filtrelere uygun ilan yok." : "Filtrelere uygun ilan bulunamadı."}
           </Text>
         )}
       </ScrollView>
 
+      {/* Filter Sheet */}
       <FilterSheet
         visible={open}
         initial={filters}
