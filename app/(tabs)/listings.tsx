@@ -1,10 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 import FilterSheet, { Filters } from "../../src/components/FilterSheet";
 import { loadFavorites, loadListings } from "../../src/lib/storage";
 import type { Listing } from "../../src/lib/types";
 
 type SortOrder = "asc" | "desc";
+
+// Aksan/şapka duyarsız arama için basit normalize helper
+function norm(s?: string) {
+  return (s ?? "")
+    .toString()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
 
 export default function ListingsScreen() {
   const [all, setAll] = useState<Listing[]>([]);
@@ -19,6 +29,9 @@ export default function ListingsScreen() {
 
   // Ücrete göre sıralama (varsayılan: azalan)
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
+  // 🔎 Arama
+  const [query, setQuery] = useState("");
 
   // Tek yerden veri çekme
   const reload = useCallback(async () => {
@@ -43,21 +56,28 @@ export default function ListingsScreen() {
 
   const applyFilters = useCallback(
     (items: Listing[], f: Filters) => {
+      const q = norm(query);
       return items.filter((it) => {
         const okFav = !onlyFavs ? true : favIds.includes(it.id);
 
         const okLoc = f.location
-          ? (it.location || "").toLowerCase().includes(f.location.toLowerCase())
+          ? norm(it.location).includes(norm(f.location))
           : true;
 
         const rate = it.hourlyRate ?? 0;
         const okMin = f.minRate != null ? rate >= (f.minRate || 0) : true;
         const okMax = f.maxRate != null ? rate <= (f.maxRate || Number.POSITIVE_INFINITY) : true;
 
-        return okFav && okLoc && okMin && okMax;
+        // 🔎 Başlık + (opsiyonel) konumda arama
+        const okQuery =
+          q.length === 0
+            ? true
+            : norm(it.title).includes(q) || norm(it.location).includes(q);
+
+        return okFav && okLoc && okMin && okMax && okQuery;
       });
     },
-    [onlyFavs, favIds]
+    [onlyFavs, favIds, query]
   );
 
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters, applyFilters]);
@@ -81,9 +101,16 @@ export default function ListingsScreen() {
     setSortOrder((s) => (s === "asc" ? "desc" : "asc"));
   }, []);
 
+  const clearAll = useCallback(() => {
+    setFilters({});
+    setOnlyFavs(false);
+    setSortOrder("desc");
+    setQuery("");
+  }, []);
+
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      {/* Başlık + Favori Switch + Filtre + Sıralama */}
+      {/* Başlık satırı */}
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
 
@@ -110,8 +137,40 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-      {/* Aktif filtre/sıralama chip’leri */}
-      {(filters.location || filters.minRate || filters.maxRate || onlyFavs || sortOrder) ? (
+      {/* 🔎 Arama kutusu */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          borderWidth: 1,
+          borderColor: "#ddd",
+          borderRadius: 10,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          marginBottom: 10,
+          backgroundColor: "#fff",
+        }}
+      >
+        <Text style={{ color: "#888", marginRight: 6 }}>🔎</Text>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Pozisyon ara…"
+          placeholderTextColor="#999"
+          style={{ flex: 1, paddingVertical: 6, fontSize: 16 }}
+          returnKeyType="search"
+          clearButtonMode="while-editing" // iOS
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery("")} style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
+            <Text style={{ color: "#1b5ccc" }}>Temizle</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Aktif filtre/sıralama/arama chip’leri */}
+      {(filters.location || filters.minRate || filters.maxRate || onlyFavs || sortOrder || query) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {onlyFavs ? (
             <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
@@ -133,18 +192,16 @@ export default function ListingsScreen() {
               <Text>Max: ₺{filters.maxRate}</Text>
             </View>
           ) : null}
+          {query ? (
+            <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
+              <Text>Ara: {query}</Text>
+            </View>
+          ) : null}
           <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: "#eef3ff", borderRadius: 999 }}>
             <Text>Sıralama: Ücret {sortOrder === "asc" ? "↑" : "↓"}</Text>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              setFilters({});
-              setOnlyFavs(false);
-              setSortOrder("desc");
-            }}
-            style={{ marginLeft: 6, padding: 6 }}
-          >
-            <Text>Temizle</Text>
+          <TouchableOpacity onPress={clearAll} style={{ marginLeft: 6, padding: 6 }}>
+            <Text>Hepsini Temizle</Text>
           </TouchableOpacity>
         </View>
       ) : null}
