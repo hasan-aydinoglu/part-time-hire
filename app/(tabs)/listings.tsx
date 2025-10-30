@@ -110,7 +110,7 @@ export default function ListingsScreen() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      {/* Başlık satırı */}
+      
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
 
@@ -120,7 +120,7 @@ export default function ListingsScreen() {
             <Switch value={onlyFavs} onValueChange={setOnlyFavs} />
           </View>
 
-          {/* Ücrete göre sıralama butonu */}
+         
           <TouchableOpacity
             onPress={toggleSort}
             style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
@@ -137,7 +137,7 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-      {/* 🔎 Arama kutusu */}
+    
       <View
         style={{
           flexDirection: "row",
@@ -169,7 +169,7 @@ export default function ListingsScreen() {
         )}
       </View>
 
-      {/* Aktif filtre/sıralama/arama chip’leri */}
+      
       {(filters.location || filters.minRate || filters.maxRate || onlyFavs || sortOrder || query) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {onlyFavs ? (
@@ -206,7 +206,7 @@ export default function ListingsScreen() {
         </View>
       ) : null}
 
-      {/* Liste */}
+      
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {sorted.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
@@ -222,7 +222,7 @@ export default function ListingsScreen() {
         )}
       </ScrollView>
 
-      {/* Filter Sheet */}
+      
       <FilterSheet
         visible={open}
         initial={filters}
