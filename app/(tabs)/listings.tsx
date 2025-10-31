@@ -16,6 +16,9 @@ function norm(s?: string) {
     .trim();
 }
 
+// 🔹 Hızlı konum önerileri (istediğin kadar ekleyebilirsin)
+const QUICK_LOCS = ["Kadıköy", "Beşiktaş", "Üsküdar", "Şişli", "Ataşehir"];
+
 export default function ListingsScreen() {
   const [all, setAll] = useState<Listing[]>([]);
   const [filters, setFilters] = useState<Filters>({});
@@ -108,9 +111,27 @@ export default function ListingsScreen() {
     setQuery("");
   }, []);
 
+  // 🔹 Chip davranışı: aynı chip’e basılırsa temizle, değilse o konumu ayarla
+  const onPickQuickLocation = useCallback(
+    (loc: string) => {
+      setFilters((prev) => {
+        const current = prev.location ?? "";
+        if (norm(current) === norm(loc)) {
+          // aynı ise temizle
+          const { location, ...rest } = prev;
+          return { ...rest };
+        }
+        return { ...prev, location: loc };
+      });
+    },
+    []
+  );
+
+  const selectedQuick = filters.location ? QUICK_LOCS.find((l) => norm(l) === norm(filters.location)) : undefined;
+
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      
+      {/* Başlık satırı */}
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, justifyContent: "space-between" }}>
         <Text style={{ fontSize: 22, fontWeight: "700" }}>İş İlanları</Text>
 
@@ -120,7 +141,7 @@ export default function ListingsScreen() {
             <Switch value={onlyFavs} onValueChange={setOnlyFavs} />
           </View>
 
-         
+          {/* Ücrete göre sıralama butonu */}
           <TouchableOpacity
             onPress={toggleSort}
             style={{ paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#ccc", borderRadius: 8 }}
@@ -137,7 +158,7 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-    
+      {/* 🔎 Arama kutusu */}
       <View
         style={{
           flexDirection: "row",
@@ -169,7 +190,46 @@ export default function ListingsScreen() {
         )}
       </View>
 
-      
+      {/* 🟦 Hızlı konum chip’leri */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {QUICK_LOCS.map((loc) => {
+            const active = norm(loc) === norm(selectedQuick);
+            return (
+              <TouchableOpacity
+                key={loc}
+                onPress={() => onPickQuickLocation(loc)}
+                style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: active ? "#1b5ccc" : "#ddd",
+                  backgroundColor: active ? "#eaf1ff" : "#fff",
+                }}
+              >
+                <Text style={{ color: active ? "#1b5ccc" : "#333" }}>{loc}</Text>
+              </TouchableOpacity>
+            );
+          })}
+          {/* Tümünü temizle chip’i */}
+          <TouchableOpacity
+            onPress={() => setFilters((p) => ({ ...p, location: undefined }))}
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: "#ddd",
+              backgroundColor: "#fff",
+            }}
+          >
+            <Text>Temizle</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Aktif filtre/sıralama/arama chip’leri */}
       {(filters.location || filters.minRate || filters.maxRate || onlyFavs || sortOrder || query) ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {onlyFavs ? (
@@ -206,7 +266,7 @@ export default function ListingsScreen() {
         </View>
       ) : null}
 
-      
+      {/* Liste */}
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {sorted.map((it) => (
           <View key={it.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "#eee" }}>
@@ -222,7 +282,7 @@ export default function ListingsScreen() {
         )}
       </ScrollView>
 
-      
+      {/* Filter Sheet */}
       <FilterSheet
         visible={open}
         initial={filters}
