@@ -14,32 +14,27 @@ type Props = {
   onClose: () => void;
   onApply: (f: Filters) => void;
 
-  /**
-   * Slider sınırları (opsiyonel). Göndermezsen varsayılan 0–1000 ₺ olur.
-   * Örn: parent’tan dinamik göndermek istersen:
-   * <FilterSheet range={{ min: 100, max: 800 }} ... />
-   */
+ 
   range?: { min: number; max: number };
 };
 
 export default function FilterSheet({ visible, initial, onClose, onApply, range }: Props) {
-  // Varsayılan slider limiti
+  
   const MIN_LIMIT = range?.min ?? 0;
   const MAX_LIMIT = range?.max ?? 1000;
 
-  // Text input’lar
   const [location, setLocation] = useState<string>("");
 
-  // Slider değerleri (number)
+  
   const [minVal, setMinVal] = useState<number>(MIN_LIMIT);
   const [maxVal, setMaxVal] = useState<number>(MAX_LIMIT);
 
-  // Text input’ları slider’la senkron tutmak için string state
+ 
   const [minRate, setMinRate] = useState<string>("");
   const [maxRate, setMaxRate] = useState<string>("");
 
   useEffect(() => {
-    // initial değerleri ekrana yansıt
+   
     const initMin = initial?.minRate ?? null;
     const initMax = initial?.maxRate ?? null;
 
@@ -50,17 +45,17 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
     setMinRate(sMin);
     setMaxRate(sMax);
 
-    // slider başlangıcı (boşsa limitlere otur)
+   
     setMinVal(initMin == null ? MIN_LIMIT : Math.max(MIN_LIMIT, Math.min(initMin, MAX_LIMIT)));
     setMaxVal(initMax == null ? MAX_LIMIT : Math.max(MIN_LIMIT, Math.min(initMax, MAX_LIMIT)));
   }, [initial, visible, MIN_LIMIT, MAX_LIMIT]);
 
-  // Text -> Slider senkronizasyonu
+  
   const onChangeMinText = (t: string) => {
     setMinRate(t);
     const n = Number(t);
     if (!Number.isNaN(n)) {
-      // min, max’ı geçmesin
+      
       const clamped = Math.max(MIN_LIMIT, Math.min(n, maxVal));
       setMinVal(clamped);
     } else if (t === "") {
@@ -72,7 +67,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
     setMaxRate(t);
     const n = Number(t);
     if (!Number.isNaN(n)) {
-      // max, min’in altına düşmesin
+     
       const clamped = Math.min(MAX_LIMIT, Math.max(n, minVal));
       setMaxVal(clamped);
     } else if (t === "") {
@@ -80,9 +75,9 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
     }
   };
 
-  // Slider -> Text senkronizasyonu
+  
   const onSlideMin = (v: number) => {
-    const val = Math.min(v, maxVal); // min, max’tan büyük olmasın
+    const val = Math.min(v, maxVal); 
     setMinVal(val);
     setMinRate(String(Math.round(val)));
   };
@@ -94,7 +89,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
   };
 
   const apply = () => {
-    // Boş string’ler null olsun
+   
     const min = minRate.trim() === "" ? null : Number(minRate);
     const max = maxRate.trim() === "" ? null : Number(maxRate);
 
@@ -119,7 +114,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
         <View style={{ backgroundColor: "#fff", padding: 16, borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
           <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>Filtreler</Text>
 
-          {/* Konum */}
+          
           <Text style={{ marginBottom: 6 }}>Konum (içerir):</Text>
           <TextInput
             placeholder="Örn: Kadıköy"
@@ -128,7 +123,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
             style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 10, marginBottom: 16 }}
           />
 
-          {/* Ücret aralığı başlık */}
+          
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
             <Text style={{ fontWeight: "600" }}>Ücret aralığı (₺/saat)</Text>
             <TouchableOpacity onPress={resetRange}>
@@ -136,7 +131,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
             </TouchableOpacity>
           </View>
 
-          {/* Min/Max input + canlı değer etiketi */}
+          
           <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
             <View style={{ flex: 1 }}>
               <Text style={{ marginBottom: 6 }}>Min</Text>
@@ -162,7 +157,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
             </View>
           </View>
 
-          {/* İki adet slider (min ve max) */}
+          
           <View style={{ marginTop: 10 }}>
             <Text style={{ marginBottom: 6 }}>Min slider</Text>
             <Slider
@@ -184,7 +179,7 @@ export default function FilterSheet({ visible, initial, onClose, onApply, range 
             />
           </View>
 
-          {/* Alt butonlar */}
+          
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 16 }}>
             <TouchableOpacity onPress={onClose} style={{ padding: 12 }}>
               <Text style={{ fontSize: 16 }}>Kapat</Text>
