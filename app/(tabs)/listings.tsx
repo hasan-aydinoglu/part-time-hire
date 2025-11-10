@@ -15,7 +15,7 @@ import type { Listing } from "../../src/lib/types";
 
 type SortOrder = "asc" | "desc";
 
-// Aksan/şapka duyarsız arama için normalize helper
+
 function norm(s?: string) {
   return (s ?? "")
     .toString()
@@ -25,7 +25,7 @@ function norm(s?: string) {
     .trim();
 }
 
-// Hızlı konum önerileri
+
 const QUICK_LOCS = ["Kadıköy", "Beşiktaş", "Üsküdar", "Şişli", "Ataşehir"];
 
 export default function ListingsScreen() {
@@ -38,16 +38,16 @@ export default function ListingsScreen() {
   const [favIds, setFavIds] = useState<string[]>([]);
   const [onlyFavs, setOnlyFavs] = useState(false);
 
-  // Pull-to-Refresh
+  
   const [refreshing, setRefreshing] = useState(false);
 
-  // Ücrete göre sıralama (varsayılan: azalan)
+  
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
-  // Arama
+  
   const [query, setQuery] = useState("");
 
-  // Tek yerden veri çekme
+ 
   const reload = useCallback(async () => {
     const data = await loadListings();
     setAll(data || []);
@@ -80,7 +80,7 @@ export default function ListingsScreen() {
         const okMin = f.minRate != null ? rate >= (f.minRate || 0) : true;
         const okMax = f.maxRate != null ? rate <= (f.maxRate || Number.POSITIVE_INFINITY) : true;
 
-        // Başlık + konumda arama
+        
         const okQuery =
           q.length === 0 ? true : norm(it.title).includes(q) || norm(it.location).includes(q);
 
@@ -92,7 +92,7 @@ export default function ListingsScreen() {
 
   const filtered = useMemo(() => applyFilters(all, filters), [all, filters, applyFilters]);
 
-  // Sıralama (hourlyRate olmayanlar sona)
+  
   const sorted = useMemo(() => {
     const val = (x: number | undefined, order: SortOrder) => {
       if (x == null) return order === "asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
@@ -118,7 +118,7 @@ export default function ListingsScreen() {
     setQuery("");
   }, []);
 
-  // Chip davranışı: aynı chip’e basılırsa temizle; değilse set et
+  
   const onPickQuickLocation = useCallback((loc: string) => {
     setFilters((prev) => {
       const current = prev.location ?? "";
@@ -136,7 +136,7 @@ export default function ListingsScreen() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      {/* Başlık satırı */}
+      
       <View
         style={{
           flexDirection: "row",
@@ -153,7 +153,7 @@ export default function ListingsScreen() {
             <Switch value={onlyFavs} onValueChange={setOnlyFavs} />
           </View>
 
-          {/* Ücrete göre sıralama */}
+          
           <TouchableOpacity
             onPress={toggleSort}
             style={{
@@ -167,7 +167,7 @@ export default function ListingsScreen() {
             <Text>Ücret {sortOrder === "asc" ? "↑" : "↓"}</Text>
           </TouchableOpacity>
 
-          {/* Filtre Sheet aç */}
+          
           <TouchableOpacity
             onPress={() => setOpen(true)}
             style={{
@@ -183,7 +183,7 @@ export default function ListingsScreen() {
         </View>
       </View>
 
-      {/* Arama kutusu */}
+      
       <View
         style={{
           flexDirection: "row",
@@ -215,7 +215,7 @@ export default function ListingsScreen() {
         )}
       </View>
 
-      {/* Hızlı konum chip’leri */}
+      
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: "row", gap: 8 }}>
           {QUICK_LOCS.map((loc) => {
@@ -237,7 +237,7 @@ export default function ListingsScreen() {
               </TouchableOpacity>
             );
           })}
-          {/* Tümünü temizle chip’i */}
+          
           <TouchableOpacity
             onPress={() => setFilters((p) => ({ ...p, location: undefined }))}
             style={{
@@ -254,7 +254,7 @@ export default function ListingsScreen() {
         </View>
       </ScrollView>
 
-      {/* Aktif filtre/sıralama/arama chip’leri */}
+      
       {(filters.location ||
         filters.minRate ||
         filters.maxRate ||
@@ -296,7 +296,7 @@ export default function ListingsScreen() {
         </View>
       ) : null}
 
-      {/* Liste */}
+     
       <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {sorted.map((it) => (
           <TouchableOpacity
@@ -311,7 +311,7 @@ export default function ListingsScreen() {
           </TouchableOpacity>
         ))}
 
-        {/* Boş durum (emoji’li) */}
+        
         {sorted.length === 0 && (
           <View style={{ alignItems: "center", paddingVertical: 32 }}>
             <Text style={{ fontSize: 42 }}>🙈</Text>
@@ -352,7 +352,7 @@ export default function ListingsScreen() {
         )}
       </ScrollView>
 
-      {/* Filter Sheet (slider için range örneği eklendi) */}
+      
       <FilterSheet
         visible={open}
         initial={filters}
